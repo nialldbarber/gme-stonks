@@ -1,1 +1,1 @@
-export const END_POINT: string = "https://duckduckgo.com/js/spice/stocks/GME";
+export const END_POINT: string = 'https://yahoo-finance-api.vercel.app/GME';
