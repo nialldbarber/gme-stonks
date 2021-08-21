@@ -1,22 +1,46 @@
-import {useState, useEffect} from 'react';
+import {useEffect} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
+import {
+  selectPrice,
+  selectPriceGBP,
+  selectPrevPrice,
+} from './store/stonks.selectors';
+import {
+  selectPrevTradingTime,
+  selectTradingEnded,
+} from './store/trading.selectors';
+import {
+  selectCurrency,
+  selectLoading,
+  selectError,
+} from './store/config.selectors';
+import {
+  setPrice,
+  setPriceGBP,
+  setPrevPrice,
+  setPriceTime,
+} from './store/stonks.slices';
+import {setPrevTradingTime} from './store/trading.slices';
+import {setCurrency, setLoading, setError} from './store/config.slices';
 import {fetchData, convertUSDToGBP} from './utils';
 import TradingTime from './components/trading-time';
 import {END_POINT, centered} from './constants';
 
 export default function App() {
-  const [price, setPrice] = useState<number>(-1);
-  const [priceGBP, setPriceGBP] = useState<number>(-1);
-  const [prevPrice, setPrevPrice] = useState<number>(-1);
+  const dispatch = useDispatch();
 
-  const [priceTime, setPriceTime] = useState<null | Date>(null);
-  const [prevTradingTime, setPrevTradingTime] = useState<null | Date>(null);
-  const [tradingEnded, setTradingEnded] = useState<boolean>(false);
+  const price = useSelector(selectPrice);
+  const priceGBP = useSelector(selectPriceGBP);
+  const prevPrice = useSelector(selectPrevPrice);
 
-  const [currency, setCurrency] = useState<string>('USD');
+  const prevTradingTime = useSelector(selectPrevTradingTime);
+  const tradingEnded = useSelector(selectTradingEnded);
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
+  const currency = useSelector(selectCurrency);
+
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
 
   useEffect(() => {
     let timeoutId: number;
@@ -27,15 +51,16 @@ export default function App() {
         const gme = data.chart.result[0];
         const time = new Date(gme.meta.regularMarketTime * 1000);
 
-        setLoading(false);
+        dispatch(setLoading(false));
 
-        setPrice(gme.meta.regularMarketPrice.toFixed(2));
-        setPrevPrice(price);
-        setPriceTime(time);
-        setPrevTradingTime(time);
+        dispatch(setPrice(gme.meta.regularMarketPrice.toFixed(2)));
+        dispatch(setPrevPrice(price));
+        dispatch(setPriceTime(time));
+
+        dispatch(setPrevTradingTime(time));
       } catch (error) {
-        setLoading(false);
-        setError(true);
+        dispatch(setLoading(false));
+        dispatch(setError(true));
         console.log('error');
       }
 
@@ -52,7 +77,7 @@ export default function App() {
 
   useEffect(() => {
     const gbp = convertUSDToGBP(price);
-    setPriceGBP(Number(gbp));
+    dispatch(setPriceGBP(Number(gbp)));
   }, [price]);
 
   if (loading) return <div className={centered}>Loading</div>;
@@ -63,8 +88,8 @@ export default function App() {
       <button
         className="absolute absolute top-3 right-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={() => {
-          if (currency === 'USD') setCurrency('GBP');
-          else setCurrency('USD');
+          if (currency === 'USD') dispatch(setCurrency('GBP'));
+          else dispatch(setCurrency('USD'));
         }}
       >
         {currency === 'USD' ? 'GBP' : 'USD'}
