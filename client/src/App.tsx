@@ -1,35 +1,8 @@
 import {useState, useEffect} from 'react';
-import {Cashify} from 'cashify';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
-import {END_POINT} from './constants';
-
-interface StonksData {
-  chart: {
-    error: null;
-    result: any;
-  };
-}
-
-function convertUSDToGBP(usd: number): string {
-  const rates = {
-    USD: 1,
-    GBP: 0.73407228,
-  };
-  const cashify = new Cashify({base: 'USD', rates});
-  const result = cashify
-    .convert(usd, {
-      from: 'USD',
-      to: 'GBP',
-    })
-    .toFixed(2);
-  return result;
-}
-
-async function fetchData(url: string): Promise<StonksData> {
-  const response = await fetch(url);
-  const json = await response.json();
-  return json;
-}
+import {fetchData, convertUSDToGBP} from './utils';
+import TradingTime from './components/trading-time';
+import {END_POINT, centered} from './constants';
 
 export default function App() {
   const [price, setPrice] = useState<number>(-1);
@@ -82,18 +55,8 @@ export default function App() {
     setPriceGBP(Number(gbp));
   }, [price]);
 
-  if (loading)
-    return (
-      <div className="bg-gray-900 flex items-center justify-center h-screen text-4xl text-gray-100">
-        Loading
-      </div>
-    );
-  if (error)
-    return (
-      <div className="bg-gray-900 flex items-center justify-center h-screen text-4xl text-red-500">
-        Error loading data
-      </div>
-    );
+  if (loading) return <div className={centered}>Loading</div>;
+  if (error) return <div className={centered}>Error loading data</div>;
 
   return (
     <div className="bg-gray-900 h-screen">
@@ -128,14 +91,7 @@ export default function App() {
                 )}
               </span>
             </p>
-            <div className="pt-1">
-              <span className="text-5xl text-gray-100">
-                {priceTime && priceTime.toLocaleTimeString()}
-              </span>
-              <span className="text-red-500">
-                {tradingEnded && ' (trading ended)'}
-              </span>
-            </div>
+            <TradingTime />
           </>
         )}
       </div>
