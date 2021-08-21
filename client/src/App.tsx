@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {Cashify} from 'cashify';
 import {END_POINT} from './constants';
 
 interface StonksData {
@@ -6,6 +7,15 @@ interface StonksData {
     error: null;
     result: any;
   };
+}
+
+function convertUSDToGBP(usd: number): any {
+  const rates = {
+    USD: 1,
+    GBP: 0.73407228,
+  };
+  const cashify = new Cashify({base: 'USD', rates});
+  return cashify.convert(usd, {from: 'USD', to: 'GBP'});
 }
 
 async function fetchData(url: string): Promise<StonksData> {
@@ -16,9 +26,11 @@ async function fetchData(url: string): Promise<StonksData> {
 
 export default function App() {
   const [price, setPrice] = useState<number>(-1);
+  const [priceGBP, setPriceGBP] = useState<number | null>(null);
   const [priceTime, setPriceTime] = useState<null | Date>(null);
   const [prevTradingTime, setPrevTradingTime] = useState<null | Date>(null);
   const [tradingEnded, setTradingEnded] = useState<boolean>(false);
+  const [currency, setCurrency] = useState<string>('USD');
 
   useEffect(() => {
     let timeoutId: number;
@@ -36,28 +48,53 @@ export default function App() {
         setTradingEnded(true);
       }
 
-      console.log(gme.meta);
-
       timeoutId = setTimeout(getLatestPrice, 5000);
     }
-
     timeoutId = setTimeout(getLatestPrice, 5000);
 
     return () => clearTimeout(timeoutId);
   }, [prevTradingTime]);
 
-  // if time is >= 21:00: trading closed
+  useEffect(() => {
+    setPriceGBP(convertUSDToGBP(price).toFixed(2));
+  }, [price]);
 
   return (
-    <div className="grid grid-cols-1 divide-y divide-yellow-500">
-      <p className="text-6xl">{price}</p>
-      <div>
-        <span className={`text-6xl text-${tradingEnded ? 'red' : 'green'}-500`}>
-          {priceTime && priceTime.toLocaleTimeString()}
-        </span>
-        <span className="text-red-500">
-          {tradingEnded && ' (trading ended!  )'}
-        </span>
+    <div className="container">
+      <button
+        className="absolute absolute top-3 right-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        onClick={() => {
+          if (currency === 'USD') {
+            setCurrency('GBP');
+          } else {
+            setCurrency('USD');
+          }
+        }}
+      >
+        {currency === 'USD' ? 'GBP' : 'USD'}
+      </button>
+      <div className="grid grid-cols-1 divide-y divide-yellow-500">
+        {price === -1 ? (
+          <p className="text-6xl">-</p>
+        ) : (
+          <>
+            <p className="text-6xl">
+              {currency === 'USD' ? `$${price}` : `£${priceGBP}`}
+            </p>
+            <div>
+              <span
+                className={`text-6xl text-${
+                  tradingEnded ? 'red' : 'green'
+                }-500`}
+              >
+                {priceTime && priceTime.toLocaleTimeString()}
+              </span>
+              <span className="text-red-500">
+                {tradingEnded && ' (trading ended!)'}
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
