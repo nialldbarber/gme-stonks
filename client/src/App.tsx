@@ -9,13 +9,19 @@ interface StonksData {
   };
 }
 
-function convertUSDToGBP(usd: number): any {
+function convertUSDToGBP(usd: number): string {
   const rates = {
     USD: 1,
     GBP: 0.73407228,
   };
   const cashify = new Cashify({base: 'USD', rates});
-  return cashify.convert(usd, {from: 'USD', to: 'GBP'});
+  const result = cashify
+    .convert(usd, {
+      from: 'USD',
+      to: 'GBP',
+    })
+    .toFixed(2);
+  return result;
 }
 
 async function fetchData(url: string): Promise<StonksData> {
@@ -26,7 +32,7 @@ async function fetchData(url: string): Promise<StonksData> {
 
 export default function App() {
   const [price, setPrice] = useState<number>(-1);
-  const [priceGBP, setPriceGBP] = useState<number | null>(null);
+  const [priceGBP, setPriceGBP] = useState<number>(-1);
   const [priceTime, setPriceTime] = useState<null | Date>(null);
   const [prevTradingTime, setPrevTradingTime] = useState<null | Date>(null);
   const [tradingEnded, setTradingEnded] = useState<boolean>(false);
@@ -56,7 +62,8 @@ export default function App() {
   }, [prevTradingTime]);
 
   useEffect(() => {
-    setPriceGBP(convertUSDToGBP(price).toFixed(2));
+    const gbp = convertUSDToGBP(price);
+    setPriceGBP(Number(gbp));
   }, [price]);
 
   return (
