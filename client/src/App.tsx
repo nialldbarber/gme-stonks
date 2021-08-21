@@ -67,25 +67,22 @@ export default function App() {
   }, [price]);
 
   return (
-    <div className="container">
+    <div className="bg-gray-900 h-screen">
       <button
-        className="absolute absolute top-3 right-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        className="absolute absolute top-3 right-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={() => {
-          if (currency === 'USD') {
-            setCurrency('GBP');
-          } else {
-            setCurrency('USD');
-          }
+          if (currency === 'USD') setCurrency('GBP');
+          else setCurrency('USD');
         }}
       >
         {currency === 'USD' ? 'GBP' : 'USD'}
       </button>
       <div className="grid grid-cols-1 divide-y divide-yellow-500">
         {price === -1 ? (
-          <p className="text-6xl">-</p>
+          <p className="text-6xl text-gray-100">-</p>
         ) : (
           <>
-            <p className="text-6xl">
+            <p className="text-6xl text-gray-100">
               {currency === 'USD' ? `$${price}` : `£${priceGBP}`}
             </p>
             <div>
@@ -97,7 +94,7 @@ export default function App() {
                 {priceTime && priceTime.toLocaleTimeString()}
               </span>
               <span className="text-red-500">
-                {tradingEnded && ' (trading ended!)'}
+                {tradingEnded && ' (trading ended)'}
               </span>
             </div>
           </>
