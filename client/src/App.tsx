@@ -48,12 +48,13 @@ export default function App() {
     async function getLatestPrice() {
       try {
         const data = await fetchData(END_POINT);
-        const gme = data.chart.result[0];
-        const time = new Date(gme.meta.regularMarketTime * 1000);
+        const gme = data?.chart?.result[0];
+
+        const time = new Date(gme?.meta?.regularMarketTime * 1000);
 
         dispatch(setLoading(false));
 
-        dispatch(setPrice(gme.meta.regularMarketPrice.toFixed(2)));
+        dispatch(setPrice(gme?.meta?.regularMarketPrice?.toFixed(2)));
         dispatch(setPrevPrice(price));
         dispatch(setPriceTime(time));
 
@@ -75,6 +76,14 @@ export default function App() {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  function toggleCurrencySwitch() {
+    if (currency === 'USD') {
+      dispatch(setCurrency('GBP'));
+    } else {
+      dispatch(setCurrency('USD'));
+    }
+  }
+
   useEffect(() => {
     const gbp = convertUSDToGBP(price);
     dispatch(setPriceGBP(Number(gbp)));
@@ -87,10 +96,7 @@ export default function App() {
     <div className="bg-gray-900 h-screen">
       <button
         className="absolute absolute top-3 right-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={() => {
-          if (currency === 'USD') dispatch(setCurrency('GBP'));
-          else dispatch(setCurrency('USD'));
-        }}
+        onClick={toggleCurrencySwitch}
       >
         {currency === 'USD' ? 'GBP' : 'USD'}
       </button>

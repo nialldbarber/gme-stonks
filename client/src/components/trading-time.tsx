@@ -9,7 +9,9 @@ export default function TradingTime() {
   return (
     <div className="pt-1">
       <span className="text-5xl text-gray-100">
-        {priceTime && priceTime?.toLocaleTimeString()}
+        <span className="text-5xl text-gray-100">
+          {priceTime && priceTime?.toLocaleTimeString()}
+        </span>
       </span>
       <span className="text-red-500">{tradingEnded && ' (trading ended)'}</span>
     </div>
