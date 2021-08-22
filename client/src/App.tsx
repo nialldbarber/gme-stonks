@@ -1,6 +1,8 @@
-import {useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
+import Chart from 'react-apexcharts';
+import ReactApexChart from 'react-apexcharts';
 import {RingSpinner} from 'react-spinners-kit';
 import {
   selectPrice,
@@ -23,10 +25,40 @@ import {
   setPriceTime,
 } from './store/stonks.slices';
 import {setPrevTradingTime} from './store/trading.slices';
-import {setCurrency, setLoading, setError} from './store/config.slices';
+import {setLoading, setError} from './store/config.slices';
 import {fetchData, convertUSDToGBP} from './utils';
 import TradingTime from './components/trading-time';
+import Header from './components/header';
 import {END_POINT, centered} from './constants';
+
+const round = (val: number): number | null => (val ? +val.toFixed(2) : null);
+
+const chart: any = {
+  options: {
+    chart: {
+      foreColor: '#fff',
+      type: 'candlestick',
+      height: 350,
+    },
+    title: {
+      text: 'GME',
+      align: 'left',
+    },
+    xaxis: {
+      type: 'datetime',
+    },
+    yaxis: {
+      tooltip: {
+        enabled: true,
+      },
+    },
+  },
+};
+
+interface Prices {
+  x: Date;
+  y: Array<number> | null;
+}
 
 export default function App() {
   const dispatch = useDispatch();
@@ -43,6 +75,12 @@ export default function App() {
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
 
+  const [series, setSeries] = useState([
+    {
+      data: [],
+    },
+  ]);
+
   useEffect(() => {
     let timeoutId: number;
 
@@ -50,20 +88,41 @@ export default function App() {
       try {
         const data = await fetchData(END_POINT);
         const gme = data?.chart?.result[0];
-
         const time = new Date(gme?.meta?.regularMarketTime * 1000);
 
-        dispatch(setLoading(false));
+        console.log(gme);
 
+        dispatch(setLoading(false));
         dispatch(setPrice(gme?.meta?.regularMarketPrice?.toFixed(2)));
         dispatch(setPrevPrice(price));
         dispatch(setPriceTime(time));
 
+        const quote = gme.indicators.quote[0];
+        const prices = gme.timestamp.map(
+          (timestamp: number, i: number): any => {
+            return {
+              x: new Date(timestamp * 1000),
+              y: [
+                quote.open[i],
+                quote.high[i],
+                quote.low[i],
+                quote.close[i],
+              ].map(round),
+            };
+          }
+        );
+
+        setSeries([
+          {
+            data: prices,
+          },
+        ]);
+
         dispatch(setPrevTradingTime(time));
-      } catch (error) {
+      } catch (err) {
         dispatch(setLoading(false));
         dispatch(setError(true));
-        console.log('error');
+        console.log(err);
       }
 
       // if (prevTradingTime?.getTime() === time?.getTime()) {
@@ -76,14 +135,6 @@ export default function App() {
 
     return () => clearTimeout(timeoutId);
   }, []);
-
-  function toggleCurrencySwitch() {
-    if (currency === 'USD') {
-      dispatch(setCurrency('GBP'));
-    } else {
-      dispatch(setCurrency('USD'));
-    }
-  }
 
   useEffect(() => {
     const gbp = convertUSDToGBP(price);
@@ -100,15 +151,7 @@ export default function App() {
 
   return (
     <div className="bg-gray-900 h-screen px-10 py-5">
-      <button
-        className="absolute absolute top-3 right-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={toggleCurrencySwitch}
-      >
-        {currency === 'USD' ? 'GBP' : 'USD'}
-      </button>
-      <h1 className="text-8xl font-normal leading-normal m-0 text-gray-100">
-        GME
-      </h1>
+      <Header />
       <div className="grid grid-cols-1 divide-y divide-red-500">
         {price === -1 ? (
           <p className="text-6xl text-gray-100">-</p>
@@ -132,6 +175,13 @@ export default function App() {
           </>
         )}
       </div>
+      <Chart
+        options={chart.options}
+        series={series}
+        type="candlestick"
+        width="100%"
+        height={320}
+      />
     </div>
   );
 }
