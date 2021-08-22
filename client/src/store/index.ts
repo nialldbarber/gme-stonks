@@ -7,12 +7,14 @@ import {
 import configReducer from './config.slices';
 import stonksReducer from './stonks.slices';
 import tradingReducer from './trading.slices';
+import chartReducer from './chart.slices';
 
 export const store = configureStore({
   reducer: {
     stonks: stonksReducer,
     trading: tradingReducer,
     config: configReducer,
+    chart: chartReducer,
   },
   // preloadedState: loadStateFromLocalStorage(),
   middleware: (getDefaultMiddleware) =>

@@ -2,7 +2,6 @@ import {useState, useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
 import Chart from 'react-apexcharts';
-import ReactApexChart from 'react-apexcharts';
 import {RingSpinner} from 'react-spinners-kit';
 import {
   selectPrice,
@@ -18,6 +17,7 @@ import {
   selectLoading,
   selectError,
 } from './store/config.selectors';
+import {selectSeries} from './store/chart.selectors';
 import {
   setPrice,
   setPriceGBP,
@@ -26,6 +26,7 @@ import {
 } from './store/stonks.slices';
 import {setPrevTradingTime} from './store/trading.slices';
 import {setLoading, setError} from './store/config.slices';
+import {setSeries} from './store/chart.slices';
 import {fetchData, convertUSDToGBP} from './utils';
 import TradingTime from './components/trading-time';
 import Header from './components/header';
@@ -75,11 +76,7 @@ export default function App() {
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
 
-  const [series, setSeries] = useState([
-    {
-      data: [],
-    },
-  ]);
+  const series = useSelector(selectSeries);
 
   useEffect(() => {
     let timeoutId: number;
@@ -112,11 +109,13 @@ export default function App() {
           }
         );
 
-        setSeries([
-          {
-            data: prices,
-          },
-        ]);
+        dispatch(
+          setSeries([
+            {
+              data: prices,
+            },
+          ])
+        );
 
         dispatch(setPrevTradingTime(time));
       } catch (err) {
