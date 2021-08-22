@@ -1,6 +1,7 @@
 import {useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
+import {RingSpinner} from 'react-spinners-kit';
 import {
   selectPrice,
   selectPriceGBP,
@@ -89,11 +90,16 @@ export default function App() {
     dispatch(setPriceGBP(Number(gbp)));
   }, [price]);
 
-  if (loading) return <div className={centered}>Loading</div>;
+  if (loading)
+    return (
+      <div className={centered}>
+        <RingSpinner />
+      </div>
+    );
   if (error) return <div className={centered}>Error loading data</div>;
 
   return (
-    <div className="bg-gray-900 h-screen">
+    <div className="bg-gray-900 h-screen px-10 py-5">
       <button
         className="absolute absolute top-3 right-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={toggleCurrencySwitch}
