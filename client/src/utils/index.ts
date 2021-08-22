@@ -27,3 +27,6 @@ export function convertUSDToGBP(usd: number): string {
     .toFixed(2);
   return result;
 }
+
+export const round = (val: number): number | null =>
+  val ? +val.toFixed(2) : null;

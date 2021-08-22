@@ -1,7 +1,6 @@
-import {useState, useEffect} from 'react';
+import {useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {MdTrendingUp, MdTrendingDown} from 'react-icons/md';
-import Chart from 'react-apexcharts';
 import {RingSpinner} from 'react-spinners-kit';
 import {
   selectPrice,
@@ -17,7 +16,6 @@ import {
   selectLoading,
   selectError,
 } from './store/config.selectors';
-import {selectSeries} from './store/chart.selectors';
 import {
   setPrice,
   setPriceGBP,
@@ -27,34 +25,11 @@ import {
 import {setPrevTradingTime} from './store/trading.slices';
 import {setLoading, setError} from './store/config.slices';
 import {setSeries} from './store/chart.slices';
-import {fetchData, convertUSDToGBP} from './utils';
+import {fetchData, convertUSDToGBP, round} from './utils';
 import TradingTime from './components/trading-time';
 import Header from './components/header';
+import CandleStickChart from './components/candle-stick-chart';
 import {END_POINT, centered} from './constants';
-
-const round = (val: number): number | null => (val ? +val.toFixed(2) : null);
-
-const chart: any = {
-  options: {
-    chart: {
-      foreColor: '#fff',
-      type: 'candlestick',
-      height: 350,
-    },
-    title: {
-      text: 'GME',
-      align: 'left',
-    },
-    xaxis: {
-      type: 'datetime',
-    },
-    yaxis: {
-      tooltip: {
-        enabled: true,
-      },
-    },
-  },
-};
 
 interface Prices {
   x: Date;
@@ -75,8 +50,6 @@ export default function App() {
 
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
-
-  const series = useSelector(selectSeries);
 
   useEffect(() => {
     let timeoutId: number;
@@ -174,13 +147,7 @@ export default function App() {
           </>
         )}
       </div>
-      <Chart
-        options={chart.options}
-        series={series}
-        type="candlestick"
-        width="100%"
-        height={320}
-      />
+      <CandleStickChart />
     </div>
   );
 }
