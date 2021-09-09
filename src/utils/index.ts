@@ -7,10 +7,22 @@ interface StonksData {
   };
 }
 
-export async function fetchData(url: string): Promise<StonksData> {
-  const response = await fetch(url);
-  const json = await response.json();
-  return json;
+export async function fetchData(url: string) {
+  const abortController = new AbortController();
+  try {
+    const response = await fetch(url, {
+      signal: abortController.signal,
+    });
+    const json = await response.json();
+    return json;
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return;
+    }
+    console.log('Error', err);
+  } finally {
+    abortController.abort();
+  }
 }
 
 export function convertUSDToGBP(usd: number): string {
