@@ -60,8 +60,6 @@ export default function App() {
         const gme = data?.chart?.result[0];
         const time = new Date(gme?.meta?.regularMarketTime * 1000);
 
-        // console.log(gme);
-
         dispatch(setLoading(false));
         dispatch(setPrice(gme?.meta?.regularMarketPrice?.toFixed(2)));
         dispatch(setPrevPrice(price));
